@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S4DLE | Daily S4 League Challenge</title>
+    <meta name="description" content="Test your S4 League knowledge with daily challenges!">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f2ff">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg-particles"></div>
+
+    <!-- HUD TOAST CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1 class="premium-title logo-ltr" onclick="location.reload()">
+                    <span class="title-s4">S4</span>
+                    <span class="title-divider">|</span>
+                    <span class="title-dle">DLE</span>
+                    <span class="title-glow"></span>
+                </h1>
+
+                <div class="header-actions">
+                    <!-- PLAYER PROFILE PANEL -->
+                    <div class="player-profile-panel" id="player-profile">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-info">
+                            <div class="profile-nickname" id="profile-nickname">Misafir</div>
+                            <div class="profile-code" id="profile-code">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="lang-switcher">
+                        <button class="lang-current" id="lang-toggle" type="button">
+                            <span class="lang-label">TR</span>
+                            <span class="lang-chevron">▾</span>
+                        </button>
+                        <div class="lang-menu hidden" id="lang-menu">
+                            <button type="button" data-lang="tr">
+                                <span data-i18n="lang_tr">TR</span>
+                            </button>
+                            <button type="button" data-lang="en">
+                                <span data-i18n="lang_en">EN</span>
+                            </button>
+                            <button type="button" data-lang="de">
+                                <span data-i18n="lang_de">DE</span>
+                            </button>
+                            <button type="button" data-lang="es">
+                                <span data-i18n="lang_es">ES</span>
+                            </button>
+                            <button type="button" data-lang="ar">
+                                <span data-i18n="lang_ar">AR</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="subtitle" id="subtitle-text" data-i18n="subtitle">Her gün yeni bir meydan okuma. Bilgini sına, zirveye tırman!</p>
+        </header>
+
+        <!-- GAME MODES -->
+        <div class="game-modes" id="game-modes">
+            <div class="mode-card classic" data-mode="classic">
+                <div class="icon">🎯</div>
+                <div class="info">
+                    <h2 data-i18n="classic_title">KLASİK</h2>
+                    <p data-i18n="classic_desc">İstatistiklere bakarak item'ı tahmin et</p>
+                </div>
+                <div class="arrow">➜</div>
+            </div>
+            
+            <div class="mode-card visual" data-mode="visual">
+                <div class="icon">👁️</div>
+                <div class="info">
+                    <h2 data-i18n="visual_title">GÖRSEL</h2>
+                    <p data-i18n="visual_desc">Yakın çekimden item veya haritayı tanı</p>
+                </div>
+                <div class="arrow">➜</div>
+            </div>
+            
+            <div class="mode-card emoji" data-mode="emoji">
+                <div class="icon">🧩</div>
+                <div class="info">
+                    <h2 data-i18n="emoji_title">EMOJİ</h2>
+                    <p data-i18n="emoji_desc">Emoji ipuçlarından item'ı tahmin et</p>
+                </div>
+                <div class="arrow">➜</div>
+            </div>
+            
+            <!-- SES MODU - DISABLED -->
+            <div class="mode-card audio disabled" data-mode="audio" title="Yakında">
+                <div class="icon">🔊</div>
+                <div class="info">
+                    <h2 data-i18n="audio_title">SES</h2>
+                    <p data-i18n="audio_desc">Ses efektini dinleyerek item'ı bul</p>
+                </div>
+                <div class="coming-soon-badge" data-i18n="coming_soon">Yakında</div>
+            </div>
+        </div>
+
+        <!-- MENU LEADERBOARD -->
+        <div class="menu-leaderboard" id="menu-leaderboard-section">
+            <div class="menu-lb-header">
+                <h2>🏆 <span data-i18n="lb_title">Liderlik Tablosu</span></h2>
+                <span class="menu-lb-subtitle" data-i18n="lb_subtitle">Bugünün en iyileri</span>
+            </div>
+            
+            <div class="menu-lb-tabs">
+                <button class="menu-lb-tab active" data-view="global" data-i18n="lb_global" type="button">Global</button>
+                <button class="menu-lb-tab" data-view="classic" data-i18n="lb_classic" type="button">Klasik</button>
+                <button class="menu-lb-tab" data-view="visual" data-i18n="lb_visual" type="button">Görsel</button>
+                <button class="menu-lb-tab" data-view="emoji" data-i18n="lb_emoji" type="button">Emoji</button>
+            </div>
+            
+            <div id="menu-leaderboard-list" class="menu-leaderboard-list">
+                <div class="lb-loading" data-i18n="lb_loading">Yükleniyor...</div>
+            </div>
+        </div>
+
+        <!-- GAME CONTAINER -->
+        <div id="game-container" class="game-container hidden">
+            <div class="game-content-grid">
+                <!-- Left: Game Area -->
+                <div class="game-area">
+                    <div class="game-nav">
+                        <button id="back-btn" class="back-btn" type="button">
+                            ← <span data-i18n="back_text">Menü</span>
+                        </button>
+                        <div class="game-header-center">
+                            <h2 id="game-title">MOD</h2>
+                        </div>
+                        <div class="spacer"></div>
+                    </div>
+
+                    <div id="mode-ui-container"></div>
+
+                    <div id="result-message" class="result-message hidden"></div>
+
+                    <!-- TUTORIAL -->
+                    <div id="tutorial-hint" class="tutorial-hint hidden">
+                        <span class="tutorial-icon">💡</span>
+                        <span class="tutorial-text" data-i18n="tutorial_classic">Başlamak için bir item ismi yaz</span>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="guess-input" placeholder="Bir isim yaz..." autocomplete="off" data-i18n-placeholder="input_placeholder">
+                        <div id="suggestions" class="suggestions-box hidden"></div>
+                    </div>
+
+                    <div class="results-area">
+                        <div class="results-header">
+                            <span data-i18n="header_item">EŞYA</span>
+                            <span data-i18n="header_type">TÜRÜ</span>
+                            <span data-i18n="header_range">MENZİL</span>
+                            <span data-i18n="header_sp">SP?</span>
+                            <span data-i18n="header_year">YIL</span>
+                        </div>
+                        <div id="guesses-list"></div>
+                    </div>
+
+                    <div class="guide-section">
+                        <div class="next-game-info">
+                            <span data-i18n="next_game_label">YENİLEME:</span>
+                            <span id="next-game-timer">--:--:--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: In-Game Leaderboard + HINTS -->
+                <div class="sidebar-container">
+                    <div class="ingame-leaderboard">
+                        <h3 class="ingame-lb-title">🏆 <span data-i18n="lb_ingame_title">Bu Modun Liderleri</span></h3>
+                        <div id="ingame-leaderboard-list" class="ingame-lb-container">
+                            <div class="lb-loading" data-i18n="lb_loading">Yükleniyor...</div>
+                        </div>
+                    </div>
+
+                    <!-- Classic Progressive Hints -->
+                    <div class="classic-hints-sidebar" id="classic-hints-sidebar" style="display: none;">
+                        <h3 class="hints-header-small">💡 <span data-i18n="hints_title">İpuçları</span></h3>
+                        <div class="hint-item-small" id="hint-a">
+                            <span class="hint-icon-small">🔒</span>
+                            <span class="hint-text-small" data-i18n="hint_locked">Kilitli</span>
+                        </div>
+                        <div class="hint-item-small" id="hint-b">
+                            <span class="hint-icon-small">🔒</span>
+                            <span class="hint-text-small" data-i18n="hint_locked">Kilitli</span>
+                        </div>
+                        <div class="hint-item-small" id="hint-c">
+                            <span class="hint-icon-small">🔒</span>
+                            <span class="hint-text-small" data-i18n="hint_locked">Kilitli</span>
+                        </div>
+                        <div class="hint-item-small" id="hint-d">
+                            <span class="hint-icon-small">🔒</span>
+                            <span class="hint-text-small" data-i18n="hint_locked">Kilitli</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <span>
+                <span data-i18n="footer_dev">Geliştirici:</span> 
+                <strong class="dev" onclick="window.open('https://xero.gg/player/Kysen')">Kysen</strong> | 
+                <span data-i18n="footer_community">S4 Xero Community</span>
+            </span>
+        </footer>
+    </div>
+
+    <!-- Nickname Modal - NO FORM, type="button" on all buttons -->
+    <div id="nickname-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-box nickname-box">
+            <button id="nickname-close" class="nickname-close" type="button" aria-label="Close">✕</button>
+            <p id="nickname-modal-message" data-i18n="nickname_prompt">Liderlik tablosunda görünmek için bir nickname gir:</p>
+            <input type="text" id="nickname-input" maxlength="16" placeholder="Nickname" data-i18n-placeholder="nickname_placeholder" autocomplete="off">
+            <div id="code-input-container" class="hidden" style="margin-top: 10px;">
+                <p data-i18n="code_prompt">4 haneli kodu gir:</p>
+                <input type="text" id="code-input" maxlength="4" placeholder="0000" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
+            </div>
+            <div id="forgot-code-link" class="hidden" style="margin-top: 8px;">
+                <a href="https://xero.gg/chat/thread/Kysen" target="_blank" style="color: var(--primary); font-size: 0.85rem; text-decoration: none; opacity: 0.8;">
+                    🔑 <span data-i18n="forgot_code">Kodunu mu unuttun?</span>
+                </a>
+            </div>
+            <div id="code-display-container" class="hidden" style="margin-top: 10px;">
+                <p id="code-display-message" style="color: var(--primary); font-weight: 700;"></p>
+                <div style="font-size: 2rem; font-family: 'Orbitron', monospace; color: var(--primary); margin: 10px 0;" id="code-display-value"></div>
+            </div>
+            <div class="nickname-actions">
+                <button id="nickname-submit" type="button" class="btn-primary" data-i18n="nickname_save">Kaydet</button>
+                <button id="nickname-skip" type="button" class="btn-secondary" data-i18n="nickname_skip">Atla</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="game-audio-player"></audio>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "s4dle-server",
+  "version": "2.0.0",
+  "description": "S4DLE Backend API Server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["s4dle", "s4league", "wordle", "game"],
+  "author": "Kysen",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "sqlite3": "^5.1.7",
+    "xss": "^1.0.15"
+  }
+}

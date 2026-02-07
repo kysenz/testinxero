@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S4DLE Admin Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#060b18;color:#e8edf8;min-height:100vh}
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:rgba(10,20,45,0.92);border:1px solid rgba(0,229,255,0.2);border-radius:16px;padding:40px;width:100%;max-width:400px;text-align:center;box-shadow:0 0 60px rgba(0,229,255,0.06)}
+.login-box h1{color:#00e5ff;font-size:1.5rem;margin-bottom:8px}
+.login-box p{color:#5a6d8a;font-size:0.85rem;margin-bottom:24px}
+.login-box input{width:100%;padding:13px 16px;background:rgba(6,11,24,0.8);border:1px solid rgba(100,150,200,0.2);border-radius:10px;color:#e8edf8;font-size:0.95rem;outline:none;margin-bottom:12px}
+.login-box input:focus{border-color:#00e5ff}
+.login-box button{width:100%;padding:13px;background:linear-gradient(135deg,#00e5ff,#0077cc);border:none;border-radius:10px;color:#000;font-weight:700;font-size:1rem;cursor:pointer}
+.login-error{color:#ef4444;font-size:0.85rem;margin-top:10px;display:none}
+.app{display:none;padding:16px 20px;max-width:1500px;margin:0 auto}.app.visible{display:block}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.topbar h1{color:#00e5ff;font-size:1.4rem}
+.topbar-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn-sm{padding:7px 14px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid rgba(100,150,200,0.15);transition:all .15s}
+.btn-danger{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:#ef4444}.btn-danger:hover{background:rgba(239,68,68,0.22)}
+.btn-cyan{background:rgba(0,229,255,0.1);border-color:rgba(0,229,255,0.25);color:#00e5ff}.btn-cyan:hover{background:rgba(0,229,255,0.18)}
+.btn-ghost{background:transparent;color:#5a6d8a;border:none}.btn-ghost:hover{color:#e8edf8}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.stat-card{background:rgba(10,20,45,0.75);border:1px solid rgba(0,229,255,0.1);border-radius:12px;padding:14px;text-align:center}
+.stat-card .val{font-size:1.7rem;font-weight:800;color:#00e5ff}.stat-card .label{font-size:0.68rem;color:#5a6d8a;margin-top:3px;text-transform:uppercase;letter-spacing:1px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{padding:9px 18px;background:rgba(0,0,0,0.25);border:1px solid rgba(100,150,200,0.1);border-radius:8px;color:#5a6d8a;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all .15s}
+.tab.active{background:rgba(0,229,255,0.1);color:#00e5ff;border-color:rgba(0,229,255,0.25)}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1;min-width:180px;padding:10px 14px;background:rgba(6,11,24,0.8);border:1px solid rgba(100,150,200,0.12);border-radius:8px;color:#e8edf8;font-size:0.88rem;outline:none}
+.toolbar input:focus{border-color:#00e5ff}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid rgba(100,150,200,0.07)}
+table{width:100%;border-collapse:collapse;min-width:850px}
+th{background:rgba(0,229,255,0.05);color:#00e5ff;padding:10px 11px;text-align:left;font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid rgba(100,150,200,0.05);font-size:0.8rem;white-space:nowrap}
+tr:hover td{background:rgba(0,229,255,0.015)}
+tr.selected td{background:rgba(0,229,255,0.06)}
+.code-cell{font-family:'Cascadia Code','Fira Code',monospace;color:#00e5ff;font-weight:700;font-size:0.88rem;letter-spacing:2px}
+.nick-cell{font-weight:700;cursor:pointer;color:#00e5ff;text-decoration:underline;text-decoration-color:rgba(0,229,255,0.3)}.nick-cell:hover{color:#fff}
+.id-cell{font-family:monospace;font-size:0.66rem;color:#5a6d8a;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.ip-cell{font-family:monospace;font-size:0.73rem;color:#8b9ec0}.ip-diff{color:#f59e0b}
+.row-actions{display:flex;gap:3px}
+.btn-xs{padding:3px 8px;border-radius:5px;font-size:0.72rem;cursor:pointer;border:1px solid rgba(100,150,200,0.1);background:transparent;transition:all .12s}
+.btn-xs.info{color:#38bdf8}.btn-xs.info:hover{background:rgba(56,189,248,0.1)}
+.btn-xs.edit{color:#a78bfa}.btn-xs.edit:hover{background:rgba(167,139,250,0.1)}
+.btn-xs.del{color:#ef4444}.btn-xs.del:hover{background:rgba(239,68,68,0.1)}
+input[type=checkbox]{accent-color:#00e5ff;width:15px;height:15px;cursor:pointer}
+.pagination{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.pagination button{padding:6px 12px;background:rgba(0,0,0,0.25);border:1px solid rgba(100,150,200,0.1);border-radius:6px;color:#5a6d8a;cursor:pointer;font-size:0.8rem}
+.pagination button.active{background:rgba(0,229,255,0.1);color:#00e5ff;border-color:rgba(0,229,255,0.25)}
+.empty{text-align:center;padding:35px;color:#5a6d8a}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.72);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-bg.visible{display:flex}
+.modal{background:rgba(8,16,38,0.97);border:1px solid rgba(0,229,255,0.15);border-radius:14px;padding:0;width:92%;max-width:700px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{padding:18px 22px;border-bottom:1px solid rgba(100,150,200,0.08);display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{color:#00e5ff;font-size:1.05rem}
+.modal-close{background:none;border:none;color:#5a6d8a;font-size:1.3rem;cursor:pointer;padding:4px 8px}.modal-close:hover{color:#fff}
+.modal-body{padding:20px 22px;overflow-y:auto;flex:1}
+.modal-footer{padding:14px 22px;border-top:1px solid rgba(100,150,200,0.08);display:flex;gap:8px;justify-content:flex-end}
+.modal-footer button{padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;border:none}
+.btn-modal-primary{background:linear-gradient(135deg,#00e5ff,#0077cc);color:#000}
+.btn-modal-danger{background:#ef4444;color:#fff}
+.btn-modal-cancel{background:rgba(100,150,200,0.08);border:1px solid rgba(100,150,200,0.15)!important;color:#8b9ec0}
+.warn{color:#ef4444;font-weight:700;font-size:0.83rem}
+.hl{color:#00e5ff;font-weight:700}
+
+/* DETAIL MODAL (xero.gg style) */
+.detail-section{margin-bottom:20px}
+.detail-section h4{font-size:0.82rem;color:#5a6d8a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(100,150,200,0.06)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+.detail-item{display:flex;flex-direction:column;gap:2px}
+.detail-label{font-size:0.72rem;color:#5a6d8a;text-transform:uppercase}
+.detail-value{font-size:0.88rem;font-weight:600;color:#e8edf8;word-break:break-all}
+.detail-value.mono{font-family:'Cascadia Code','Fira Code',monospace;letter-spacing:1px}
+.detail-value.cyan{color:#00e5ff}
+.detail-value.warn{color:#f59e0b}
+
+/* TABS inside detail modal */
+.detail-tabs{display:flex;gap:4px;margin-bottom:12px}
+.detail-tab{padding:7px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(100,150,200,0.08);border-radius:6px;color:#5a6d8a;cursor:pointer;font-weight:600;font-size:0.78rem;transition:all .12s}
+.detail-tab.active{background:rgba(0,229,255,0.08);color:#00e5ff;border-color:rgba(0,229,255,0.2)}
+
+/* AUTH LOG TABLE (xero.gg style) */
+.log-table{width:100%;border-collapse:collapse}
+.log-table th{background:rgba(0,229,255,0.03);color:#00e5ff;padding:8px 10px;font-size:0.68rem;text-transform:uppercase;text-align:left;letter-spacing:1px}
+.log-table td{padding:7px 10px;border-bottom:1px solid rgba(100,150,200,0.04);font-size:0.8rem}
+.log-action{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-weight:600}
+.log-action.register{background:rgba(34,197,94,0.12);color:#22c55e}
+.log-action.login{background:rgba(0,229,255,0.1);color:#00e5ff}
+.log-action.login_transfer{background:rgba(245,158,11,0.12);color:#f59e0b}
+.log-ip{font-family:monospace;font-size:0.82rem;color:#e8edf8;font-weight:600}
+.log-ua{font-size:0.68rem;color:#5a6d8a;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-date{color:#8b9ec0;font-size:0.8rem}
+.log-pag{display:flex;gap:4px;margin-top:10px;justify-content:center}
+.log-pag button{padding:4px 10px;border-radius:5px;font-size:0.75rem;background:rgba(0,0,0,0.3);border:1px solid rgba(100,150,200,0.08);color:#5a6d8a;cursor:pointer}
+.log-pag button.active{color:#00e5ff;border-color:rgba(0,229,255,0.2)}
+
+/* STAT BADGES */
+.mode-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.mode-badge{padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:600;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.12);color:#00e5ff}
+
+/* UNIQUE IPS */
+.ip-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ip-tag{padding:3px 10px;border-radius:5px;font-family:monospace;font-size:0.78rem;background:rgba(100,150,200,0.06);border:1px solid rgba(100,150,200,0.1);color:#8b9ec0}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:rgba(10,20,45,0.95);border:1px solid rgba(0,229,255,0.2);border-radius:10px;padding:12px 20px;color:#e8edf8;font-size:0.86rem;z-index:2000;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}.toast.err{border-color:rgba(239,68,68,0.3)}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+ <div class="login-box">
+  <h1>🔐 S4DLE Admin</h1>
+  <p>Yönetim paneline erişmek için giriş yapın</p>
+  <input type="text" id="loginUser" placeholder="Kullanıcı adı" autocomplete="username">
+  <input type="password" id="loginPass" placeholder="Şifre" autocomplete="current-password">
+  <button onclick="doLogin()">Giriş Yap</button>
+  <div class="login-error" id="loginError"></div>
+ </div>
+</div>
+
+<div class="app" id="mainApp">
+ <div class="topbar">
+  <h1>🎮 S4DLE Admin</h1>
+  <div class="topbar-actions">
+   <button class="btn-sm btn-cyan" onclick="exportData('players')">📥 Oyuncular</button>
+   <button class="btn-sm btn-cyan" onclick="exportData('submissions')">📥 Skorlar</button>
+   <button class="btn-sm btn-danger" onclick="askNuke()">💣 Tümünü Sil</button>
+   <span style="color:#5a6d8a;font-size:0.8rem" id="adminUser"></span>
+   <button class="btn-sm btn-ghost" onclick="doLogout()">Çıkış ↗</button>
+  </div>
+ </div>
+ <div class="stats-grid" id="stats"></div>
+ <div class="tabs">
+  <div class="tab active" onclick="switchTab('players',this)">👥 Oyuncular</div>
+  <div class="tab" onclick="switchTab('submissions',this)">📊 Skorlar</div>
+ </div>
+ <div class="toolbar" id="toolbar">
+  <input id="search" placeholder="Ara (nick, ID, IP)..." onkeydown="if(event.key==='Enter')loadPlayers()">
+  <button class="btn-sm btn-cyan" onclick="loadPlayers()">Ara</button>
+  <button class="btn-sm btn-danger" id="bulkBtn" style="display:none" onclick="askBulkDelete()">🗑 Seçilenleri Sil (<span id="selCnt">0</span>)</button>
+ </div>
+ <div id="content"></div>
+ <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+let T=localStorage.getItem('s4dle_admin_token')||'',curTab='players',curPage=1,sel=new Set(),pageData=[];
+
+// AUTH
+async function doLogin(){
+ const u=q('#loginUser').value.trim(),p=q('#loginPass').value,e=q('#loginError');
+ e.style.display='none';
+ if(!u||!p){e.textContent='Kullanıcı adı ve şifre gerekli';e.style.display='block';return}
+ try{const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+ const d=await r.json();
+ if(d.success&&d.token){T=d.token;localStorage.setItem('s4dle_admin_token',T);boot()}
+ else{e.textContent=d.error==='INVALID_CREDENTIALS'?'Geçersiz giriş bilgileri':(d.error||'Hata');e.style.display='block'}}
+ catch(x){e.textContent='Bağlantı hatası';e.style.display='block'}}
+function logout(){T='';localStorage.removeItem('s4dle_admin_token');q('#mainApp').classList.remove('visible');q('#loginScreen').style.display='flex'}
+function doLogout(){logout()}
+async function api(url,o={}){o.headers={'Authorization':'Bearer '+T,'Content-Type':'application/json',...(o.headers||{})};
+ const r=await fetch(url,o);if(r.status===401||r.status===403){logout();return null}return r.json()}
+function boot(){q('#loginScreen').style.display='none';q('#mainApp').classList.add('visible');
+ try{const p=JSON.parse(atob(T.split('.')[1]));q('#adminUser').textContent='👤 '+p.user}catch(e){}
+ loadDash();loadPlayers()}
+async function chk(){if(!T)return;try{const d=await api('/api/admin/dashboard');if(d&&d.success){boot();return}}catch(e){}logout()}
+q('#loginUser').onkeydown=e=>{if(e.key==='Enter')doLogin()};
+q('#loginPass').onkeydown=e=>{if(e.key==='Enter')doLogin()};
+
+// HELPERS
+function q(s){return document.querySelector(s)}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function fmt(iso){if(!iso)return'-';return new Date(iso).toLocaleDateString('tr')}
+function fmtFull(ts){if(!ts)return'-';const d=new Date(ts*1000);return d.toLocaleString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit',day:'2-digit',month:'2-digit',year:'2-digit'})}
+function toast(m,err){const t=q('#toast');t.textContent=m;t.className='toast'+(err?' err':'')+' show';setTimeout(()=>t.classList.remove('show'),3000)}
+function openM(html){q('#modalBox').innerHTML=html;q('#modalBg').classList.add('visible')}
+function closeM(){q('#modalBg').classList.remove('visible')}
+q('#modalBg').onclick=e=>{if(e.target.id==='modalBg')closeM()};
+
+// DASHBOARD
+async function loadDash(){const d=await api('/api/admin/dashboard');if(!d||!d.success)return;const s=d.stats;
+ q('#stats').innerHTML=cd(s.totalPlayers,'Toplam Oyuncu')+cd(s.todayPlayers,'Bugün Aktif')+cd(s.totalSubmissions,'Toplam Oyun')+cd(s.todaySubmissions,'Bugün Oyun')+cd(s.todayWins,'Bugün Win')}
+function cd(v,l){return'<div class="stat-card"><div class="val">'+v+'</div><div class="label">'+l+'</div></div>'}
+
+// PLAYERS
+async function loadPlayers(pg){
+ curPage=pg||1;sel.clear();updBulk();
+ const s=q('#search').value;
+ const d=await api('/api/admin/players?search='+encodeURIComponent(s)+'&page='+curPage+'&limit=30');
+ if(!d||!d.success)return;pageData=d.players;
+ if(!d.players.length){q('#content').innerHTML='<div class="empty">Sonuç yok</div>';q('#pagination').innerHTML='';return}
+ let h='<div class="table-wrap"><table><tr><th><input type="checkbox" onchange="togAll(this)"></th><th>Nick</th><th>Kod</th><th>Kayıt IP</th><th>Son IP</th><th>Oyun</th><th>Win</th><th>Kayıt</th><th>Son</th><th>İşlem</th></tr>';
+ d.players.forEach(p=>{
+  const si=p.registerIp&&p.lastIp&&p.registerIp===p.lastIp;
+  const rc=p.lastSeenAt&&(Date.now()-new Date(p.lastSeenAt).getTime())<3600000;
+  h+='<tr id="r-'+esc(p.playerId)+'">';
+  h+='<td><input type="checkbox" data-id="'+esc(p.playerId)+'" onchange="togSel(this)"></td>';
+  h+='<td class="nick-cell" onclick="showDetail(\''+esc(p.playerId)+'\')">'+esc(p.nickname)+'</td>';
+  h+='<td class="code-cell">'+esc(p.code||'-')+'</td>';
+  h+='<td class="ip-cell">'+esc(p.registerIp||'-')+'</td>';
+  h+='<td class="ip-cell '+(si?'':'ip-diff')+'">'+esc(p.lastIp||'-')+'</td>';
+  h+='<td>'+p.totalGames+'</td><td>'+p.totalWins+'</td>';
+  h+='<td>'+fmt(p.createdAt)+'</td>';
+  h+='<td><span class="dot" style="background:'+(rc?'#22c55e':'#3a4560')+'"></span>'+fmt(p.lastSeenAt)+'</td>';
+  h+='<td class="row-actions">';
+  h+='<button class="btn-xs info" onclick="showDetail(\''+esc(p.playerId)+'\')" title="Detaylar">📋</button>';
+  h+='<button class="btn-xs edit" onclick="askEdit(\''+esc(p.playerId)+'\')" title="Düzenle">✏️</button>';
+  h+='<button class="btn-xs del" onclick="askDel(\''+esc(p.playerId)+'\',\''+esc(p.nickname)+'\')" title="Sil">🗑</button>';
+  h+='</td></tr>';
+ });
+ h+='</table></div>';
+ q('#content').innerHTML=h;renderPag(d.pages);
+}
+
+// SUBMISSIONS
+async function loadSubs(){
+ const d=await api('/api/admin/submissions');if(!d||!d.success)return;
+ if(!d.data.length){q('#content').innerHTML='<div class="empty">Bugün skor yok</div>';q('#pagination').innerHTML='';return}
+ let h='<div class="table-wrap"><table><tr><th>Nick</th><th>Mod</th><th>Deneme</th><th>Kazandı</th><th>Gün</th><th>Zaman</th></tr>';
+ d.data.forEach(s=>{h+='<tr><td class="nick-cell" style="cursor:default;text-decoration:none">'+esc(s.nickname)+'</td><td>'+esc(s.mode)+'</td><td>'+s.attempts+'</td><td>'+(s.won?'✅':'❌')+'</td><td>'+esc(s.day)+'</td><td>'+fmtFull(s.createdAt)+'</td></tr>'});
+ h+='</table></div>';q('#content').innerHTML=h;q('#pagination').innerHTML='';
+}
+
+// SELECT
+function togAll(c){document.querySelectorAll('input[data-id]').forEach(x=>{x.checked=c.checked;togSel(x,1)});updBulk()}
+function togSel(c,b){const id=c.dataset.id;if(c.checked)sel.add(id);else sel.delete(id);
+ const r=document.getElementById('r-'+id);if(r)r.classList.toggle('selected',c.checked);if(!b)updBulk()}
+function updBulk(){const b=q('#bulkBtn'),c=q('#selCnt');if(sel.size){b.style.display='';c.textContent=sel.size}else b.style.display='none'}
+
+// ==================== PLAYER DETAIL MODAL (xero.gg style) ====================
+async function showDetail(playerId){
+ // Fetch detail + auth logs in parallel
+ const [detail, logs, hist] = await Promise.all([
+  api('/api/admin/player/'+encodeURIComponent(playerId)+'/detail'),
+  api('/api/admin/player/'+encodeURIComponent(playerId)+'/auth-logs?limit=20'),
+  api('/api/admin/player/'+encodeURIComponent(playerId)+'/history')
+ ]);
+ if(!detail||!detail.success)return;
+ const p=detail.player;
+ const sameIp=p.registerIp&&p.lastIp&&p.registerIp===p.lastIp;
+
+ let h='<div class="modal-header"><h3>📋 '+esc(p.nickname)+'</h3><button class="modal-close" onclick="closeM()">✕</button></div>';
+ h+='<div class="modal-body">';
+
+ // === INFO SECTION ===
+ h+='<div class="detail-section"><h4>Oyuncu Bilgileri</h4><div class="detail-grid">';
+ h+='<div class="detail-item"><span class="detail-label">Nickname</span><span class="detail-value cyan">'+esc(p.nickname)+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Kod</span><span class="detail-value mono cyan">'+esc(p.code||'-')+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Player ID</span><span class="detail-value mono" style="font-size:0.72rem">'+esc(p.playerId)+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Toplam Giriş</span><span class="detail-value">'+detail.totalLogins+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Kayıt IP</span><span class="detail-value mono">'+esc(p.registerIp||'-')+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Son IP</span><span class="detail-value mono'+(sameIp?'':' warn')+'">'+esc(p.lastIp||'-')+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Kayıt Tarihi</span><span class="detail-value">'+fmtFull(p.createdAt)+'</span></div>';
+ h+='<div class="detail-item"><span class="detail-label">Son Görülme</span><span class="detail-value">'+fmtFull(p.lastSeenAt)+'</span></div>';
+ h+='</div></div>';
+
+ // === UNIQUE IPS ===
+ if(detail.uniqueIps&&detail.uniqueIps.length){
+  h+='<div class="detail-section"><h4>Kullanılan IP Adresleri ('+detail.uniqueIps.length+')</h4><div class="ip-tags">';
+  detail.uniqueIps.forEach(ip=>{h+='<span class="ip-tag">'+esc(ip)+'</span>'});
+  h+='</div></div>';
+ }
+
+ // === MODE STATS ===
+ if(detail.modeStats&&detail.modeStats.length){
+  h+='<div class="detail-section"><h4>Mod İstatistikleri</h4><div class="mode-badges">';
+  detail.modeStats.forEach(m=>{h+='<span class="mode-badge">'+esc(m.mode)+': '+m.games+' oyun / '+m.wins+' win</span>'});
+  h+='</div></div>';
+ }
+
+ // === TABS: Auth Logs / Game History ===
+ h+='<div class="detail-section">';
+ h+='<div class="detail-tabs"><div class="detail-tab active" onclick="switchDetailTab(\'auth\',this)">🔐 Giriş Geçmişi</div><div class="detail-tab" onclick="switchDetailTab(\'games\',this)">🎮 Oyun Geçmişi</div></div>';
+
+ // Auth logs tab
+ h+='<div id="detail-auth">';
+ if(logs&&logs.success&&logs.logs.length){
+  h+=renderAuthTable(logs.logs);
+  if(logs.pages>1) h+=renderLogPag(playerId,logs.page,logs.pages);
+ } else h+='<div class="empty" style="padding:16px">Henüz giriş kaydı yok</div>';
+ h+='</div>';
+
+ // Games tab (hidden)
+ h+='<div id="detail-games" style="display:none">';
+ if(hist&&hist.success&&hist.submissions.length){
+  h+='<table class="log-table"><tr><th>Gün</th><th>Mod</th><th>Deneme</th><th>Sonuç</th><th>Zaman</th></tr>';
+  hist.submissions.forEach(s=>{h+='<tr><td>'+esc(s.day)+'</td><td>'+esc(s.mode)+'</td><td>'+s.attempts+'</td><td>'+(s.won?'✅':'❌')+'</td><td>'+fmtFull(s.createdAt)+'</td></tr>'});
+  h+='</table>';
+ } else h+='<div class="empty" style="padding:16px">Skor yok</div>';
+ h+='</div>';
+
+ h+='</div>'; // detail-section
+ h+='</div>'; // modal-body
+
+ // Footer actions
+ h+='<div class="modal-footer">';
+ h+='<button class="btn-modal-cancel" onclick="closeM()">Kapat</button>';
+ h+='<button class="btn-modal-primary" onclick="closeM();askEdit(\''+esc(p.playerId)+'\')">✏️ Düzenle</button>';
+ h+='<button class="btn-modal-danger" onclick="closeM();askDel(\''+esc(p.playerId)+'\',\''+esc(p.nickname)+'\')">🗑 Sil</button>';
+ h+='</div>';
+
+ openM(h);
+}
+
+function renderAuthTable(logs){
+ let h='<table class="log-table"><tr><th>İşlem</th><th>Durum</th><th>Tarih</th><th>IP</th><th>Cihaz</th></tr>';
+ logs.forEach(l=>{
+  const cls=l.action==='register'?'register':(l.action==='login_transfer'?'login_transfer':'login');
+  const label=l.action==='register'?'Kayıt':(l.action==='login_transfer'?'Transfer':'Giriş');
+  h+='<tr>';
+  h+='<td><span class="log-action '+cls+'">'+label+'</span></td>';
+  h+='<td style="color:#22c55e">Success</td>';
+  h+='<td class="log-date">'+fmtFull(l.createdAt)+'</td>';
+  h+='<td class="log-ip">'+esc(l.ip||'-')+'</td>';
+  h+='<td class="log-ua" title="'+esc(l.userAgent||'')+'">'+esc((l.userAgent||'').slice(0,40))+'</td>';
+  h+='</tr>';
+ });
+ h+='</table>';
+ return h;
+}
+
+function renderLogPag(playerId,cur,total){
+ let h='<div class="log-pag">';
+ for(let i=1;i<=Math.min(total,10);i++) h+='<button class="'+(i===cur?'active':'')+'" onclick="loadAuthPage(\''+esc(playerId)+'\','+i+')">'+i+'</button>';
+ if(total>10) h+='<button disabled>…'+total+'</button>';
+ h+='</div>';
+ return h;
+}
+
+async function loadAuthPage(playerId,page){
+ const d=await api('/api/admin/player/'+encodeURIComponent(playerId)+'/auth-logs?page='+page+'&limit=20');
+ if(!d||!d.success)return;
+ const el=document.getElementById('detail-auth');
+ if(el) el.innerHTML=renderAuthTable(d.logs)+(d.pages>1?renderLogPag(playerId,d.page,d.pages):'');
+}
+
+function switchDetailTab(tab,el){
+ document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+ el.classList.add('active');
+ document.getElementById('detail-auth').style.display=tab==='auth'?'':'none';
+ document.getElementById('detail-games').style.display=tab==='games'?'':'none';
+}
+
+// ==================== EDIT ====================
+function askEdit(id){
+ const p=pageData.find(x=>x.playerId===id);if(!p)return;
+ openM(
+  '<div class="modal-header"><h3>✏️ Oyuncu Düzenle</h3><button class="modal-close" onclick="closeM()">✕</button></div>'+
+  '<div class="modal-body">'+
+  '<p style="font-size:0.75rem;color:#5a6d8a;margin-bottom:12px">ID: '+esc(p.playerId)+'</p>'+
+  '<label style="display:block;font-size:0.78rem;color:#5a6d8a;margin-bottom:3px">Nickname</label>'+
+  '<input id="eNick" value="'+esc(p.nickname)+'" maxlength="16" style="width:100%;padding:10px 14px;background:rgba(6,11,24,0.8);border:1px solid rgba(100,150,200,0.15);border-radius:8px;color:#e8edf8;font-size:0.9rem;outline:none;margin-bottom:10px">'+
+  '<label style="display:block;font-size:0.78rem;color:#5a6d8a;margin-bottom:3px">Kod (4 haneli)</label>'+
+  '<input id="eCode" value="'+esc(p.code||'')+'" maxlength="4" inputmode="numeric" style="width:100%;padding:10px 14px;background:rgba(6,11,24,0.8);border:1px solid rgba(100,150,200,0.15);border-radius:8px;color:#00e5ff;font-size:1.1rem;font-family:monospace;letter-spacing:4px;outline:none">'+
+  '</div>'+
+  '<div class="modal-footer"><button class="btn-modal-cancel" onclick="closeM()">İptal</button><button class="btn-modal-primary" onclick="doEdit(\''+esc(id)+'\')">Kaydet</button></div>')
+}
+async function doEdit(id){
+ const n=q('#eNick').value.trim(),c=q('#eCode').value.trim(),b={};
+ if(n)b.nickname=n;if(c)b.code=c;
+ const d=await api('/api/admin/player/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify(b)});
+ closeM();if(d&&d.success){toast('Güncellendi');loadPlayers(curPage)}else toast(d?.error||'Hata',1)}
+
+// ==================== DELETE ====================
+function askDel(id,n){openM(
+ '<div class="modal-header"><h3>⚠️ Oyuncu Sil</h3><button class="modal-close" onclick="closeM()">✕</button></div>'+
+ '<div class="modal-body"><p><span class="hl">'+esc(n)+'</span> ve tüm verileri silinecek.</p><p class="warn" style="margin-top:8px">Geri alınamaz!</p></div>'+
+ '<div class="modal-footer"><button class="btn-modal-cancel" onclick="closeM()">İptal</button><button class="btn-modal-danger" onclick="doDel(\''+esc(id)+'\')">Sil</button></div>')}
+async function doDel(id){const d=await api('/api/admin/player/'+encodeURIComponent(id),{method:'DELETE'});closeM();if(d&&d.success){toast('Silindi');loadPlayers(curPage);loadDash()}else toast(d?.error||'Hata',1)}
+
+// BULK DELETE
+function askBulkDelete(){const n=sel.size;openM(
+ '<div class="modal-header"><h3>⚠️ Toplu Silme</h3><button class="modal-close" onclick="closeM()">✕</button></div>'+
+ '<div class="modal-body"><p><span class="hl">'+n+' oyuncu</span> silinecek.</p><p class="warn" style="margin-top:8px">Geri alınamaz!</p></div>'+
+ '<div class="modal-footer"><button class="btn-modal-cancel" onclick="closeM()">İptal</button><button class="btn-modal-danger" onclick="doBulk()">'+n+' Oyuncuyu Sil</button></div>')}
+async function doBulk(){const d=await api('/api/admin/players/bulk-delete',{method:'POST',body:JSON.stringify({playerIds:[...sel]})});closeM();if(d&&d.success){toast(d.deletedPlayers+' oyuncu silindi');sel.clear();loadPlayers(curPage);loadDash()}else toast(d?.error||'Hata',1)}
+
+// NUKE
+function askNuke(){openM(
+ '<div class="modal-header"><h3>💣 TÜM VERİLERİ SİL</h3><button class="modal-close" onclick="closeM()">✕</button></div>'+
+ '<div class="modal-body"><p>Tüm oyuncular, skorlar ve loglar <span class="hl">kalıcı olarak</span> silinecek.</p><p class="warn" style="margin-top:8px">GERİ DÖNÜŞÜ YOK!</p>'+
+ '<label style="display:block;font-size:0.78rem;color:#5a6d8a;margin-top:14px;margin-bottom:3px">Onay için <strong>DELETE_ALL</strong> yazın:</label>'+
+ '<input id="nukeC" placeholder="DELETE_ALL" style="width:100%;padding:10px 14px;background:rgba(6,11,24,0.8);border:1px solid rgba(100,150,200,0.15);border-radius:8px;color:#e8edf8;font-size:0.9rem;outline:none"></div>'+
+ '<div class="modal-footer"><button class="btn-modal-cancel" onclick="closeM()">İptal</button><button class="btn-modal-danger" onclick="doNuke()">HER ŞEYİ SİL</button></div>')}
+async function doNuke(){if(q('#nukeC').value.trim()!=='DELETE_ALL'){toast('Onay kodu yanlış',1);return}
+ const d=await api('/api/admin/players/all',{method:'DELETE',body:JSON.stringify({confirm:'DELETE_ALL'})});closeM();if(d&&d.success){toast(d.deletedPlayers+' oyuncu, '+d.deletedSubmissions+' skor silindi');loadPlayers();loadDash()}else toast(d?.error||'Hata',1)}
+
+// EXPORT
+async function exportData(t){const d=await api('/api/admin/export/'+t);if(!d||!d.success)return;
+ const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');
+ a.href=URL.createObjectURL(b);a.download='s4dle_'+t+'_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Export indirildi')}
+
+// TABS / PAG
+function switchTab(t,el){curTab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');sel.clear();updBulk();
+ if(t==='players'){q('#toolbar').style.display='';loadPlayers()}else{q('#toolbar').style.display='none';loadSubs()}}
+function renderPag(pages){if(pages<=1){q('#pagination').innerHTML='';return}let h='';
+ const s=Math.max(1,curPage-4),e=Math.min(pages,curPage+4);
+ if(s>1)h+='<button onclick="loadPlayers(1)">1</button>';if(s>2)h+='<button disabled>…</button>';
+ for(let i=s;i<=e;i++)h+='<button class="'+(i===curPage?'active':'')+'" onclick="loadPlayers('+i+')">'+i+'</button>';
+ if(e<pages-1)h+='<button disabled>…</button>';if(e<pages)h+='<button onclick="loadPlayers('+pages+')">'+pages+'</button>';
+ q('#pagination').innerHTML=h}
+
+chk();
+</script>
+</body>
+</html>
