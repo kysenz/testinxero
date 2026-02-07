@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Proxy arkasında gerçek IP almak için (nginx, cloudflare vb.)
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 // IP alma helper - gerçek IP'yi al, proxy arkasında da çalışır
 function getClientIp(req) {
