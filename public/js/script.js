@@ -2016,17 +2016,18 @@ async function loadPlayerProfile() {
     } else if (data && data.error === 'NOT_FOUND') {
       // Server'da hesap YOK (admin silmiş)
       // localStorage'daki eski veriyi temizle
+      const hadAccount = !!localStorage.getItem('s4dle_player_nickname');
       localStorage.removeItem('s4dle_player_nickname');
       localStorage.removeItem('s4dle_player_code');
       localStorage.removeItem(PLAYER_ID_KEY);
       
-      // Oyun progress kayıtlarını da temizle ki tekrar oynayabilsin
-      clearAllGameProgress();
+      // Sadece DAHA ÖNCE hesabı OLAN kullanıcı için oyun sıfırla
+      if (hadAccount) {
+          clearAllGameProgress();
+      }
       
       updateProfileUI();
-      
-      // Sayfayı yenile ki oyun durumu resetlensin
-      setTimeout(() => location.reload(), 500);
+      // NOT: reload yapmıyoruz - sonsuz döngü yaratır (yeni ziyaretçi = NOT_FOUND = reload = NOT_FOUND...)
     }
   } catch (e) {
     // offline vs: sessiz geç
@@ -2533,10 +2534,14 @@ async function syncServerTime() {
         if (data.today) {
             const storedDay = localStorage.getItem('s4dle_server_day');
             if (storedDay && storedDay !== data.today) {
-                // Gün değişmiş — sayfayı yenile
-                localStorage.setItem('s4dle_server_day', data.today);
-                setTimeout(() => location.reload(), 500);
-                return;
+                // Gün değişmiş — ama sadece 1 kez yenile (loop koruması)
+                const lastReload = sessionStorage.getItem('s4dle_day_reload');
+                if (lastReload !== data.today) {
+                    localStorage.setItem('s4dle_server_day', data.today);
+                    sessionStorage.setItem('s4dle_day_reload', data.today);
+                    setTimeout(() => location.reload(), 500);
+                    return;
+                }
             }
             localStorage.setItem('s4dle_server_day', data.today);
         }
@@ -2579,9 +2584,15 @@ function updateCountdown() {
         timer.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
     
-    // Gece yarısı → sayfayı yenile
+    // Gece yarısı → sayfayı yenile (sadece 1 kez)
     if (hours === 0 && minutes === 0 && seconds <= 1) {
-        setTimeout(() => location.reload(), 1500);
+        if (!sessionStorage.getItem('s4dle_midnight_reload')) {
+            sessionStorage.setItem('s4dle_midnight_reload', '1');
+            setTimeout(() => location.reload(), 1500);
+        }
+    } else {
+        // Gece yarısı geçtikten sonra flag'i temizle
+        sessionStorage.removeItem('s4dle_midnight_reload');
     }
 }
 
